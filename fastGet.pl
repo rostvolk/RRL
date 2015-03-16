@@ -48,7 +48,7 @@ my $dbh = DBI->connect( "DBI:mysql:$db:$db_host:$db_port", $db_user, $db_pass )
 # получаем ip, user и snmp_pass для snmp опроса
 
 my $sth = $dbh->prepare(
-"SELECT Interface.id, Interface.ifOID,  host.hostname, host.snmp_username, host.snmp_password,host.id 	FROM Interface, host	WHERE Interface.host_id = host.id and Interface.ifState=1"
+"SELECT Interface.id, Interface.ifOID,  host.hostname, host.snmp_username, host.snmp_password,host.id,host.snmp_timeout 	FROM Interface, host	WHERE Interface.host_id = host.id and Interface.ifState=1"
 );    # готовим запрос
 $sth->execute or die "Error: $DBI::errstr\n";
 
@@ -62,6 +62,7 @@ while ( my @row = $sth->fetchrow_array ) {
     $myint{ $row[0] }{'pass'}   = $row[4];
     $myint{ $row[0] }{'hostid'} = $row[5];
     $myint{ $row[0] }{'OID'}    = $row[1];
+    $myint{ $row[0] }{'timeout'}    = $row[6];
 }
 
 # выводим хэ на экран
@@ -89,6 +90,7 @@ for my $id ( keys %myint ) {
         -username     => $myint{$id}{'user'},
         -authpassword => $myint{$id}{'pass'},
         -nonblocking  => 1,
+        -timeout       => $myint{$id}{'timeout'}/1000,
     );
 #    print "qued: $id\t$myint{$id}{'ip'}\t$myint{$id}{'OID'}\t$myint{$id}{'hostid'}\n";
 
@@ -266,7 +268,7 @@ $If_OutErrors = $result->{ $OID_OutErrors . $OID } if ($result->{ $OID_OutErrors
           . $Delta_OutDiscards . "','"
           . $Delta_InErrors . "','"
           . $Delta_OutErrors . "')";
-		  $dbh->do("$MySQL_query2") or die "Error: $DBI::errstr\n";
+#		  $dbh->do("$MySQL_query2") or die "Error: $DBI::errstr\n";
 
 
 my $t0_t1 = tv_interval $t0;
@@ -299,7 +301,7 @@ my $t0_t1 = tv_interval $t0;
           . $If_InErrors . "','"
           . $If_OutErrors . "') ";
 #print "$MySQL_query4\n";
-         $dbh->do("$MySQL_query4") or die "Error: $DBI::errstr\n";
+#         $dbh->do("$MySQL_query4") or die "Error: $DBI::errstr\n";
  
 
     $sth1->finish;
