@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use IO::Socket;
-
+use Time::HiRes qw(usleep nanosleep);
 
 # подрубаем модуль для работы с MySQL
 use DBI;
@@ -37,7 +37,7 @@ my $dbh = DBI->connect( "DBI:mysql:$db:$db_host:$db_port", $db_user, $db_pass )
 
 
 # извлекаем предыдущие значения		
-		my $MySQL_query1 ="SELECT concat_ws('.',b.hostname,b.IfTypeName,concat(b.IfName,'-',ifDescr)),a.SNMP_unix_time,a.IFspeed,a.interval_measure,a.InHighOctets,a.OutHighOctets,a.InDiscards,a.OutDiscards,a.InErrors,a.OutErrors FROM `SNMP-Traffic` as a,Interface as b  where a.Interface_id=b.id  order by SNMP_unix_time desc limit 100";
+		my $MySQL_query1 ="SELECT  concat_ws('.',b.hostname,b.IfTypeName,concat(b.IfName,'-',ifDescr)),a.SNMP_unix_time,a.IFspeed,a.interval_measure,a.InHighOctets,a.OutHighOctets,a.InDiscards,a.OutDiscards,a.InErrors,a.OutErrors FROM `SNMP-Traffic` as a,Interface as b  where a.Interface_id=b.id and a.SNMP_date='2015-03-17' and a.SNMP_time='16:40:00'";
 
     my $sth1 = $dbh->prepare("$MySQL_query1") or die "Error: $DBI::errstr\n";
     $sth1->execute or die "Unable to execute '$MySQL_query1'.  " . $sth1->errstr;
@@ -59,18 +59,18 @@ my $socket = IO::Socket::INET->new(
             $DB_InDiscards,     $DB_OutDiscards,  $DB_InErrors,
             $DB_OutErrors
           )
-          = (
-            $$res1[1], $$res1[0], $$res1[2], $$res1[3], $$res1[4],
-            $$res1[5], $$res1[6], $$res1[7], $$res1[8], $$res1[9]
-          );
+          = ($$res1[1], $$res1[0], $$res1[2], $$res1[3], $$res1[4],
+            $$res1[5], $$res1[6], $$res1[7], $$res1[8], $$res1[9]);
 	
     $DB_metric=~s/\//-/g;
       my $trafin=$DB_InHighOctets*8/$DB_interval;
       my $trafOut=$DB_OutHighOctets*8/$DB_interval;
- 	 print  "Yaroslavl.$DB_metric\n"; 
-    print $socket "Yaroslavl.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
+ 	 
+  
 print $socket  "Yaroslavl.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
+print   "Yaroslavl.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
  print $socket "Yaroslavl.$DB_metric.InOctets  $DB_InHighOctets $DB_SNMP_unix_time\n";
+ print "Yaroslavl.$DB_metric.InOctets  $DB_InHighOctets $DB_SNMP_unix_time\n";
  print $socket "Yaroslavl.$DB_metric.OutOctets  $DB_OutHighOctets $DB_SNMP_unix_time\n";
  print $socket  "Yaroslavl.$DB_metric.InDiscards  $DB_InDiscards $DB_SNMP_unix_time\n";   
 print $socket  "Yaroslavl.$DB_metric.OutDiscards  $DB_OutDiscards $DB_SNMP_unix_time\n";     
@@ -78,7 +78,7 @@ print $socket  "Yaroslavl.$DB_metric.InErrors  $DB_InErrors $DB_SNMP_unix_time\n
  print $socket "Yaroslavl.$DB_metric.OutErrors  $DB_OutErrors $DB_SNMP_unix_time\n";       
 print $socket  "Yaroslavl.$DB_metric.TrafIn  $trafin $DB_SNMP_unix_time\n";  
  print $socket  "Yaroslavl.$DB_metric.TrafOut  $trafOut $DB_SNMP_unix_time\n"; 
-     
+usleep(100000);    
     
      
 }
