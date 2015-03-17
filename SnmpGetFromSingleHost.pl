@@ -16,7 +16,7 @@ my $db_user = "rrl";          # имя пользователя
 my $db_pass = "rrl_pass";     # пароль
 my $db      = "RRLTraffic";
 
-#my $id_if = $ARGV[0];    # ID интерфейса из  InterfaceHost.id
+my $hostip = $ARGV[0];    # ip host
 
 my $OID_IfSpeed       = '1.3.6.1.2.1.2.2.1.5.';
 my $OID_InOctets      = '1.3.6.1.2.1.2.2.1.10.';
@@ -48,7 +48,7 @@ my $dbh = DBI->connect( "DBI:mysql:$db:$db_host:$db_port", $db_user, $db_pass )
 # получаем ip, user и snmp_pass для snmp опроса
 
 my $sth = $dbh->prepare(
-"SELECT Interface.id, Interface.ifOID,  host.hostname, host.snmp_username, host.snmp_password,host.id,host.snmp_timeout 	FROM Interface, host	WHERE Interface.host_id = host.id and Interface.ifState=1"
+"SELECT Interface.id, Interface.ifOID,  host.hostname, host.snmp_username, host.snmp_password,host.id,host.snmp_timeout 	FROM Interface, host	WHERE Interface.host_id = host.id and Interface.ifState=1 and host.hostname like '".$hostip."'"
 );    # готовим запрос
 $sth->execute or die "Error: $DBI::errstr\n";
 
@@ -66,9 +66,9 @@ while ( my @row = $sth->fetchrow_array ) {
 }
 
 # выводим хэ на экран
-#   while ( my ($key) = each(%myint) ) {
-#        print "$key\t$myint{$key}{'ip'}\t$myint{$key}{'OID'}\t$myint{$key}{'hostid'}\n";
-#    }
+   while ( my ($key) = each(%myint) ) {
+        print "$key\t$myint{$key}{'ip'}\t$myint{$key}{'OID'}\t$myint{$key}{'hostid'}\n";
+    }
 
 #размер хэша
 #print "size of hash:  " . keys(%myint) . ".\n";
@@ -91,7 +91,7 @@ for my $id ( keys %myint ) {
         -nonblocking  => 1,
         -timeout       => $myint{$id}{'timeout'}/1000,
     );
-#    print "qued: $id\t$myint{$id}{'ip'}\t$myint{$id}{'OID'}\t$myint{$id}{'hostid'}\n";
+    print "qued: $id\t$myint{$id}{'ip'}\t$myint{$id}{'OID'}\t$myint{$id}{'hostid'}\n";
 
     if ( !defined $session ) {
         printf "ERROR: Failed to create session for host '%s': %s.\n",

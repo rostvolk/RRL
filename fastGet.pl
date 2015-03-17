@@ -247,7 +247,7 @@ sub get_callback {
           . $min
           . ":00','". $unix_time . "','"
           . $id . "','"
-		  . $hostid . "','"
+		    . $hostid . "','"
           . $If_Speed . "','"
           . $interval_measure . "','"
           . $Delta_InOctets . "','"
@@ -258,7 +258,7 @@ sub get_callback {
           . $Delta_OutDiscards . "','"
           . $Delta_InErrors . "','"
           . $Delta_OutErrors . "')";
-#		  $dbh->do("$MySQL_query2") or die "Error: $DBI::errstr\n";
+		  $dbh->do("$MySQL_query2") or die "Error: $DBI::errstr\n";
 
 
 # выводим результат на экран
@@ -288,7 +288,7 @@ sub get_callback {
           . $If_InErrors . "','"
           . $If_OutErrors . "') ";
 #print "$MySQL_query4\n";
-#         $dbh->do("$MySQL_query4") or die "Error: $DBI::errstr\n";
+         $dbh->do("$MySQL_query4") or die "Error: $DBI::errstr\n";
  
 
     $sth1->finish;
