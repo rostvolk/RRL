@@ -19,6 +19,7 @@ my $db      = "RRLTraffic";
 
 #my $id_if = $ARGV[0];    # ID интерфейса из  InterfaceHost.id
 
+my $count=0;
 
 # достаём время
 my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
@@ -37,11 +38,13 @@ my $dbh = DBI->connect( "DBI:mysql:$db:$db_host:$db_port", $db_user, $db_pass )
 
 
 # извлекаем предыдущие значения		
-		my $MySQL_query1 ="SELECT  concat_ws('.',b.hostname,b.IfTypeName,concat(b.IfName,'-',ifDescr)),a.SNMP_unix_time,a.IFspeed,a.interval_measure,a.InHighOctets,a.OutHighOctets,a.InDiscards,a.OutDiscards,a.InErrors,a.OutErrors FROM `SNMP-Traffic` as a,Interface as b  where a.Interface_id=b.id and a.SNMP_date='2015-03-17' and a.SNMP_time='16:40:00'";
-
+		my $MySQL_query1 ="SELECT  a.metric,a.SNMP_unix_time,a.IFspeed,a.interval_measure,a.InHighOctets,a.OutHighOctets,a.InDiscards,a.OutDiscards,a.InErrors,a.OutErrors FROM View_Metric_last10min as a ";
+      
+  
+#and a.SNMP_time='16:40:00'
     my $sth1 = $dbh->prepare("$MySQL_query1") or die "Error: $DBI::errstr\n";
     $sth1->execute or die "Unable to execute '$MySQL_query1'.  " . $sth1->errstr;
-    # print "$MySQL_query1\n";
+     #print "$MySQL_query1\n";
 
 my $socket = IO::Socket::INET->new(
    PeerAddr=> "localhost",
@@ -62,23 +65,22 @@ my $socket = IO::Socket::INET->new(
           = ($$res1[1], $$res1[0], $$res1[2], $$res1[3], $$res1[4],
             $$res1[5], $$res1[6], $$res1[7], $$res1[8], $$res1[9]);
 	
-    $DB_metric=~s/\//-/g;
+   # $DB_metric=~s/\//-/g;
       my $trafin=$DB_InHighOctets*8/$DB_interval;
       my $trafOut=$DB_OutHighOctets*8/$DB_interval;
- 	 
-  
-print $socket  "Yaroslavl.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
-print   "Yaroslavl.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
- print $socket "Yaroslavl.$DB_metric.InOctets  $DB_InHighOctets $DB_SNMP_unix_time\n";
- print "Yaroslavl.$DB_metric.InOctets  $DB_InHighOctets $DB_SNMP_unix_time\n";
- print $socket "Yaroslavl.$DB_metric.OutOctets  $DB_OutHighOctets $DB_SNMP_unix_time\n";
- print $socket  "Yaroslavl.$DB_metric.InDiscards  $DB_InDiscards $DB_SNMP_unix_time\n";   
-print $socket  "Yaroslavl.$DB_metric.OutDiscards  $DB_OutDiscards $DB_SNMP_unix_time\n";     
-print $socket  "Yaroslavl.$DB_metric.InErrors  $DB_InErrors $DB_SNMP_unix_time\n";  
- print $socket "Yaroslavl.$DB_metric.OutErrors  $DB_OutErrors $DB_SNMP_unix_time\n";       
-print $socket  "Yaroslavl.$DB_metric.TrafIn  $trafin $DB_SNMP_unix_time\n";  
- print $socket  "Yaroslavl.$DB_metric.TrafOut  $trafOut $DB_SNMP_unix_time\n"; 
-usleep(100000);    
+ 	$count= $count+9; 
+  my $BeginMetric="Yaroslavl.RRL";
+   print $socket  "$BeginMetric.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
+   print   "$BeginMetric.$DB_metric.Ifspeed  $DB_IFSpeed $DB_SNMP_unix_time\n";
+   print $socket "$BeginMetric.$DB_metric.InOctets  $DB_InHighOctets $DB_SNMP_unix_time\n";
+   print $socket "$BeginMetric.$DB_metric.OutOctets  $DB_OutHighOctets $DB_SNMP_unix_time\n";
+   print $socket  "$BeginMetric.$DB_metric.InDiscards  $DB_InDiscards $DB_SNMP_unix_time\n";   
+   print $socket  "$BeginMetric.$DB_metric.OutDiscards  $DB_OutDiscards $DB_SNMP_unix_time\n";     
+   print $socket  "$BeginMetric.$DB_metric.InErrors  $DB_InErrors $DB_SNMP_unix_time\n";  
+   print $socket "$BeginMetric.$DB_metric.OutErrors  $DB_OutErrors $DB_SNMP_unix_time\n";       
+   print $socket  "$BeginMetric.$DB_metric.TrafIn  $trafin $DB_SNMP_unix_time\n";  
+   print $socket  "$BeginMetric.$DB_metric.TrafOut  $trafOut $DB_SNMP_unix_time\n"; 
+  # usleep(100000);    
     
      
 }
@@ -86,6 +88,7 @@ usleep(100000);
 
 $sth1->finish;        # закрываем
 $dbh->disconnect;    # соединение
+print "count metric:$count\n";
 
 exit 0;
 
